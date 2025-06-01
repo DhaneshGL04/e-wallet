@@ -22,7 +22,7 @@ public class Role {
     @SequenceGenerator(
             name = "role_seq_gen",
             sequenceName = "role_seq",
-            allocationSize = 5
+            allocationSize = 50
     )
     private Long id;
 
