@@ -61,27 +61,30 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        // CORS configuration
-        httpSecurity
-                .cors(cors -> cors
-                        .configurationSource(request -> {
-                            org.springframework.web.cors.CorsConfiguration corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                            corsConfig.addAllowedOrigin("https://e-wallet-client.onrender.com");
-                            corsConfig.addAllowedMethod("*");
-                            corsConfig.addAllowedHeader("*");
-                            corsConfig.setAllowCredentials(true);
-                            return corsConfig;
-                        }))
-                .csrf().disable()
-                .exceptionHandling().authenticationEntryPoint(authEntryPointJwt).and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeHttpRequests()
-                .requestMatchers(AUTH_WHITELIST).permitAll()
-                .anyRequest().authenticated();
+     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+     // CORS configuration
+     httpSecurity
+             .cors(cors -> cors
+                     .configurationSource(request -> {
+                         org.springframework.web.cors.CorsConfiguration corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                         corsConfig.addAllowedOrigin("https://e-wallet-client.onrender.com");
+                         corsConfig.addAllowedMethod("*"); // Allow all methods for CORS
+                         corsConfig.addAllowedHeader("*"); // Allow all headers for CORS
+                         corsConfig.setAllowCredentials(true);
+                         // Set max age for preflight requests to be cached by the browser
+                         corsConfig.setMaxAge(3600L); // Cache preflight for 1 hour
+                         return corsConfig;
+                     }))
+             .csrf().disable()
+             .exceptionHandling().authenticationEntryPoint(authEntryPointJwt).and()
+             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+             .authorizeHttpRequests()
+             .requestMatchers(AUTH_WHITELIST).permitAll()
+             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <--- ADD THIS LINE
+             .anyRequest().authenticated();
 
-        httpSecurity.authenticationProvider(authenticationProvider());
-        httpSecurity.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-        return httpSecurity.build();
-    }
+     httpSecurity.authenticationProvider(authenticationProvider());
+     httpSecurity.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+     return httpSecurity.build();
+ }
 }
