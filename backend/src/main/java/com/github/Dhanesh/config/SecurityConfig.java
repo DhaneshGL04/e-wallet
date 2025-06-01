@@ -67,7 +67,7 @@ public class SecurityConfig {
              .cors(cors -> cors
                      .configurationSource(request -> {
                          org.springframework.web.cors.CorsConfiguration corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                         corsConfig.addAllowedOrigin("https://e-wallet-client.onrender.com");
+                         corsConfig.addAllowedOrigin("https://e-wallet-1-jdkv.onrender.com");
                          corsConfig.addAllowedMethod("*"); // Allow all methods for CORS
                          corsConfig.addAllowedHeader("*"); // Allow all headers for CORS
                          corsConfig.setAllowCredentials(true);
