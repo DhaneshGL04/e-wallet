@@ -1,7 +1,8 @@
 package com.github.Dhanesh.config;
-import com.github.Dhanesh.security.AuthEntryPointJwt;
-import com.github.Dhanesh.security.AuthTokenFilter;
-import com.github.Dhanesh.security.UserDetailsServiceImpl;
+
+import com.github.Dhanesh.security.jwt.AuthEntryPointJwt;
+import com.github.Dhanesh.security.jwt.AuthTokenFilter;
+import com.github.Dhanesh.security.services.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +17,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.http.HttpMethod;
-/**
- * Configuration file used to configure security settings of the application
- */
+import org.springframework.http.HttpMethod; // Keep this import, though its usage will change
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -29,6 +28,7 @@ public class SecurityConfig {
     private final AuthEntryPointJwt authEntryPointJwt;
     private final UserDetailsServiceImpl userDetailsService;
 
+    // AUTH_WHITELIST is no longer strictly necessary as all requests will be permitted
     private static final String[] AUTH_WHITELIST = {
             "/api/v1/auth/**",
             "/v3/api-docs/**",
@@ -61,30 +61,32 @@ public class SecurityConfig {
     }
 
     @Bean
-     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-     // CORS configuration
-     httpSecurity
-             .cors(cors -> cors
-                     .configurationSource(request -> {
-                         org.springframework.web.cors.CorsConfiguration corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                         corsConfig.addAllowedOrigin("https://e-wallet-1-jdkv.onrender.com");
-                         corsConfig.addAllowedMethod("*"); // Allow all methods for CORS
-                         corsConfig.addAllowedHeader("*"); // Allow all headers for CORS
-                         corsConfig.setAllowCredentials(true);
-                         // Set max age for preflight requests to be cached by the browser
-                         corsConfig.setMaxAge(3600L); // Cache preflight for 1 hour
-                         return corsConfig;
-                     }))
-             .csrf().disable()
-             .exceptionHandling().authenticationEntryPoint(authEntryPointJwt).and()
-             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-             .authorizeHttpRequests()
-             .requestMatchers(AUTH_WHITELIST).permitAll()
-             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <--- ADD THIS LINE
-             .anyRequest().authenticated();
+    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+        // Disabling all security for development/hobby project purposes.
+        // This configuration allows all requests without authentication or authorization.
+        httpSecurity
+                .cors(cors -> cors
+                        .configurationSource(request -> {
+                            org.springframework.web.cors.CorsConfiguration corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                            corsConfig.addAllowedOrigin("https://e-wallet-1-jdkv.onrender.com");
+                            corsConfig.addAllowedMethod("*"); // Allow all methods for CORS
+                            corsConfig.addAllowedHeader("*"); // Allow all headers for CORS
+                            corsConfig.setAllowCredentials(true);
+                            corsConfig.setMaxAge(3600L); // Cache preflight for 1 hour
+                            return corsConfig;
+                        }))
+                .csrf().disable() // Disable CSRF protection
+                .exceptionHandling().authenticationEntryPoint(authEntryPointJwt).and() // Keep this for now, but it won't be triggered if all requests are permitted
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and() // Keep stateless session
+                .authorizeHttpRequests()
+                .anyRequest().permitAll(); // Permit all requests
 
-     httpSecurity.authenticationProvider(authenticationProvider());
-     httpSecurity.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-     return httpSecurity.build();
- }
+        // The following lines related to authentication providers and filters are now effectively bypassed
+        // because .anyRequest().permitAll() takes precedence.
+        // However, keeping them here won't cause issues if you decide to re-enable security later.
+        httpSecurity.authenticationProvider(authenticationProvider());
+        httpSecurity.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        return httpSecurity.build();
+    }
 }
