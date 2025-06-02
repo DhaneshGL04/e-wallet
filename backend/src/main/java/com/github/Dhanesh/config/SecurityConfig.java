@@ -18,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // Keep this import if you prefer a separate CorsConfigurationSource bean
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -79,22 +79,19 @@ public class SecurityConfig {
                         }))
                 // Disable CSRF protection for API calls (common with JWT)
                 .csrf(csrf -> csrf.disable())
-                // Configure exception handling for unauthorized access
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt))
+                // No exception handling needed for unauthorized access if everything is permitted
+                // .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt)) // REMOVE OR COMMENT OUT THIS LINE
                 // Set session management to stateless (no session will be created or used)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // Authorize requests
                 .authorizeHttpRequests(auth -> auth
-                        // Allow specific public endpoints without authentication
-                        .requestMatchers("/api/auth/**", "/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow preflight requests for all paths
-                        // All other requests require authentication
-                        .anyRequest().authenticated()
+                        // Allow all requests without authentication
+                        .anyRequest().permitAll() // THIS IS THE CRUCIAL CHANGE
                 );
 
-        // Add the custom JWT authentication filter before the Spring Security's default UsernamePasswordAuthenticationFilter
-        httpSecurity.authenticationProvider(authenticationProvider());
-        httpSecurity.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        // You can comment out or remove these lines as authentication is no longer strictly needed for all paths
+        // httpSecurity.authenticationProvider(authenticationProvider());
+        // httpSecurity.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
