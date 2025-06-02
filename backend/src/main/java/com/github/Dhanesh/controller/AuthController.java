@@ -19,7 +19,7 @@ import static com.github.Dhanesh.common.Constants.SUCCESS;
 
 @CrossOrigin(origins = "http://localhost:3000/")
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
