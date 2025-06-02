@@ -23,7 +23,7 @@ import static com.github.Dhanesh.common.Constants.SUCCESS;
 
 @CrossOrigin(origins = "http://localhost:3000/")
 @RestController
-@RequestMapping("/api/v1/wallets")
+@RequestMapping("/wallets")
 @RequiredArgsConstructor
 public class WalletController {
 
